@@ -4,47 +4,65 @@
   <meta charset="UTF-8" />
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>车辆照片上传</title>
+  <title>车辆交接上传</title>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
       margin: 0;
-      padding: 20px;
       background: #111;
       color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
-    h2 {
-      text-align: center;
+    header, footer {
+      background: #000;
       color: #FFCC00;
+      padding: 12px;
+      text-align: center;
+      flex-shrink: 0;
+      font-weight: bold;
+      font-size: 18px;
     }
-    input, textarea, button {
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    input, textarea {
       width: 100%;
       margin-top: 16px;
       padding: 14px;
       font-size: 18px;
       border-radius: 10px;
       box-sizing: border-box;
-    }
-    input, textarea {
       background: #222;
       color: #fff;
       border: 1px solid #444;
     }
+    img {
+      width: 100%;
+      margin-top: 12px;
+      border-radius: 8px;
+    }
     button {
+      width: 100%;
+      font-size: 18px;
+      padding: 14px;
       background: #FFCC00;
       color: #111;
+      border-radius: 12px;
       border: none;
       font-weight: bold;
     }
-    img {
-      width: 100%;
-      margin-top: 10px;
-      border-radius: 8px;
+    #status {
+      font-size: 14px;
+      margin-top: 6px;
     }
   </style>
   <script>
     let imageBase64 = "";
-
     function previewImage(input) {
       const file = input.files[0];
       const reader = new FileReader();
@@ -57,23 +75,42 @@
 
     function submitReport() {
       const note = document.getElementById("note").value;
+      const status = document.getElementById("status");
       if (!imageBase64 || !note) {
         alert("请填写备注并拍照");
         return;
       }
-      document.getElementById("status").innerText = "正在发送...";
+      status.innerText = "正在发送...";
+      status.style.color = "#FFCC00";
+
+      const timeout = setTimeout(() => {
+        status.innerText = "请求超时，请重试";
+        status.style.color = "red";
+      }, 10000);
+
       google.script.run.withSuccessHandler(function (msg) {
-        document.getElementById("status").innerText = msg;
+        clearTimeout(timeout);
+        if (msg.includes("成功")) {
+          status.innerText = msg;
+          status.style.color = "#00ff99";
+        } else {
+          status.innerText = "发送失败：" + msg;
+          status.style.color = "red";
+        }
       }).sendPhotoByEmail(note, imageBase64);
     }
   </script>
 </head>
 <body>
-  <h2>车辆交接照片上传</h2>
-  <input type="file" accept="image/*" capture="environment" onchange="previewImage(this)">
-  <img id="preview" src="" style="display: none;" onload="this.style.display='block'">
-  <textarea id="note" rows="4" placeholder="请输入备注，例如：晚上10点还车，车况良好"></textarea>
-  <button onclick="submitReport()">提交</button>
-  <div id="status" style="margin-top: 20px; text-align:center;"></div>
+  <header>车辆交接上传</header>
+  <main>
+    <input type="file" accept="image/*" capture="environment" onchange="previewImage(this)">
+    <img id="preview" src="" style="display:none" onload="this.style.display='block'">
+    <textarea id="note" rows="4" placeholder="请输入备注，例如：晚上10点还车，车况良好"></textarea>
+  </main>
+  <footer>
+    <button onclick="submitReport()">提交</button>
+    <div id="status"></div>
+  </footer>
 </body>
 </html>
