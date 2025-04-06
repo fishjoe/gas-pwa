@@ -2,99 +2,78 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Kiwi PWA</title>
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#111111" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>车辆照片上传</title>
   <style>
-    :root {
-      --primary: #FFCC00;
-      --accent: #00C2A0;
-      --background: #111111;
-      --text: #ffffff;
-      --input-bg: #1e1e1e;
-      --border: #555555;
-      --radius: 12px;
-    }
-
     body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
       margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
-      background: var(--background);
-      color: var(--text);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      padding: 20px;
+      background: #111;
+      color: #fff;
     }
-
-    .container {
-      width: 100%;
-      max-width: 420px;
-      padding: 24px;
-      box-sizing: border-box;
-    }
-
     h2 {
       text-align: center;
-      margin-bottom: 24px;
-      font-size: 26px;
-      color: var(--primary);
+      color: #FFCC00;
     }
-
-    input {
+    input, textarea, button {
       width: 100%;
+      margin-top: 16px;
       padding: 14px;
       font-size: 18px;
-      margin-bottom: 18px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--input-bg);
-      color: var(--text);
+      border-radius: 10px;
       box-sizing: border-box;
     }
-
+    input, textarea {
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+    }
     button {
-      width: 100%;
-      padding: 16px;
-      font-size: 18px;
-      background-color: var(--primary);
-      color: var(--background);
+      background: #FFCC00;
+      color: #111;
       border: none;
-      border-radius: var(--radius);
       font-weight: bold;
-      transition: background 0.2s, transform 0.2s;
     }
-
-    button:hover {
-      background-color: var(--accent);
-      transform: scale(1.02);
-    }
-
-    #output {
-      margin-top: 24px;
-      text-align: center;
-      font-size: 18px;
-      color: var(--accent);
+    img {
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 8px;
     }
   </style>
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
+    let imageBase64 = "";
+
+    function previewImage(input) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        imageBase64 = e.target.result;
+        document.getElementById('preview').src = imageBase64;
+      };
+      reader.readAsDataURL(file);
     }
-    function submitData() {
-      const val = document.getElementById('textInput').value;
-      document.getElementById('output').innerText = '你输入的是：' + val;
+
+    function submitReport() {
+      const note = document.getElementById("note").value;
+      if (!imageBase64 || !note) {
+        alert("请填写备注并拍照");
+        return;
+      }
+      document.getElementById("status").innerText = "正在发送...";
+      google.script.run.withSuccessHandler(function (msg) {
+        document.getElementById("status").innerText = msg;
+      }).sendPhotoByEmail(note, imageBase64);
     }
   </script>
 </head>
 <body>
-  <div class="container">
-    <h2>KIWI PWA 应用</h2>
-    <input type="text" id="textInput" placeholder="请输入内容">
-    <button onclick="submitData()">提交</button>
-    <div id="output"></div>
-  </div>
+  <h2>车辆交接照片上传</h2>
+  <input type="file" accept="image/*" capture="environment" onchange="previewImage(this)">
+  <img id="preview" src="" style="display: none;" onload="this.style.display='block'">
+  <textarea id="note" rows="4" placeholder="请输入备注，例如：晚上10点还车，车况良好"></textarea>
+  <button onclick="submitReport()">提交</button>
+  <div id="status" style="margin-top: 20px; text-align:center;"></div>
 </body>
 </html>
