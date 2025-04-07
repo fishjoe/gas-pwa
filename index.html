@@ -2,44 +2,60 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>LED 控制器</title>
+  <title>MQTT 控制面板</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
     body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    button { font-size: 22px; padding: 15px 30px; margin: 10px; border-radius: 8px; }
-    #on { background: #4CAF50; color: white; }
-    #off { background: #f44336; color: white; }
+    button { font-size: 20px; padding: 10px 20px; margin: 10px; border-radius: 8px; }
+    #on { background-color: #4CAF50; color: white; }
+    #off { background-color: #f44336; color: white; }
+    #status { margin-top: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h2>BLE 控制板载 LED</h2>
-  <button onclick="connect()">连接设备</button><br><br>
-  <button id="on" onclick="sendCommand('ON')">开启</button>
-  <button id="off" onclick="sendCommand('OFF')">关闭</button>
+  <h2>MQTT 控制设备</h2>
+
+  <label>MQTT 地址: </label>
+  <input type="text" id="broker" value="wss://test.mosquitto.org:8081"><br><br>
+
+  <label>主题: </label>
+  <input type="text" id="topic" value="device/led"><br><br>
+
+  <button onclick="connectMQTT()">连接</button><br><br>
+  <button id="on" onclick="publish('ON')">开灯</button>
+  <button id="off" onclick="publish('OFF')">关灯</button>
+
+  <div id="status">未连接</div>
 
   <script>
-    let characteristic = null;
+    let client = null;
 
-    async function connect() {
-      try {
-        const device = await navigator.bluetooth.requestDevice({
-          filters: [{ name: 'A1-FFFF1222A999' }],
-          optionalServices: [0xFFF0]
-        });
-        const server = await device.gatt.connect();
-        const service = await server.getPrimaryService(0xFFF0);
-        characteristic = await service.getCharacteristic(0xFFF1);
-        alert("连接成功！");
-      } catch (e) {
-        alert("连接失败：" + e);
-      }
+    function connectMQTT() {
+      const broker = document.getElementById('broker').value;
+      client = mqtt.connect(broker);
+
+      client.on('connect', () => {
+        document.getElementById('status').innerText = '已连接';
+        const topic = document.getElementById('topic').value;
+        client.subscribe('device/status');  // 订阅状态反馈
+      });
+
+      client.on('message', (topic, message) => {
+        document.getElementById('status').innerText = `设备状态：${message}`;
+      });
+
+      client.on('error', (err) => {
+        document.getElementById('status').innerText = '连接失败：' + err.message;
+      });
     }
 
-    async function sendCommand(cmd) {
-      if (!characteristic) {
-        alert("请先连接设备！");
+    function publish(command) {
+      if (!client || !client.connected) {
+        alert("MQTT 未连接！");
         return;
       }
-      await characteristic.writeValue(new TextEncoder().encode(cmd));
+      const topic = document.getElementById('topic').value;
+      client.publish(topic, command);
     }
   </script>
 </body>
