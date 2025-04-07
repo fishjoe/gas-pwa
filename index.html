@@ -1,42 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>BLE 控制示例</title>
+  <meta charset="UTF-8">
+  <title>LED 控制器</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    button { font-size: 22px; padding: 15px 30px; margin: 10px; border-radius: 8px; }
+    #on { background: #4CAF50; color: white; }
+    #off { background: #f44336; color: white; }
+  </style>
 </head>
 <body>
-  <h2>BLE 连接测试</h2>
-  <button onclick="connectBLE()">连接冰箱</button>
-  <button onclick="sendCommand()">发送指令</button>
+  <h2>BLE 控制板载 LED</h2>
+  <button onclick="connect()">连接设备</button><br><br>
+  <button id="on" onclick="sendCommand('ON')">开启</button>
+  <button id="off" onclick="sendCommand('OFF')">关闭</button>
 
   <script>
-    let device, characteristic;
+    let characteristic = null;
 
-    async function connectBLE() {
+    async function connect() {
       try {
-        device = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: 'Car-Freezer' }],
-          optionalServices: [0x1234]
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ name: 'A1-FFFF1222A999' }],
+          optionalServices: [0xFFF0]
         });
-
         const server = await device.gatt.connect();
-        const service = await server.getPrimaryService(0x1234);
+        const service = await server.getPrimaryService(0xFFF0);
         characteristic = await service.getCharacteristic(0xFFF1);
-
-        console.log('BLE 已连接');
-      } catch (error) {
-        console.error('连接失败', error);
+        alert("连接成功！");
+      } catch (e) {
+        alert("连接失败：" + e);
       }
     }
 
-    async function sendCommand() {
+    async function sendCommand(cmd) {
       if (!characteristic) {
-        alert("尚未连接设备");
+        alert("请先连接设备！");
         return;
       }
-      const command = new Uint8Array([0x01, 0x02]); // 你的设备协议指令
-      await characteristic.writeValue(command);
-      console.log('指令已发送');
+      await characteristic.writeValue(new TextEncoder().encode(cmd));
     }
   </script>
 </body>
