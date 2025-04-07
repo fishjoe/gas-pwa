@@ -2,60 +2,64 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>MQTT 控制面板</title>
+  <title>MQTT 简易测试</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    button { font-size: 20px; padding: 10px 20px; margin: 10px; border-radius: 8px; }
-    #on { background-color: #4CAF50; color: white; }
-    #off { background-color: #f44336; color: white; }
-    #status { margin-top: 20px; font-weight: bold; }
+    body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+    input, button, textarea { width: 100%; margin-top: 10px; padding: 8px; font-size: 16px; }
+    textarea { height: 150px; }
   </style>
 </head>
 <body>
-  <h2>MQTT 控制设备</h2>
+  <h2>MQTT 测试工具</h2>
 
-  <label>MQTT 地址: </label>
-  <input type="text" id="broker" value="wss://test.mosquitto.org:8081"><br><br>
+  <input id="broker" value="wss://test.mosquitto.org:8081" placeholder="MQTT 地址（wss://）">
+  <input id="subTopic" value="test/topic" placeholder="订阅主题">
+  <input id="pubTopic" value="test/topic" placeholder="发布主题">
+  <input id="message" placeholder="要发送的消息">
+  <button onclick="connect()">连接</button>
+  <button onclick="publish()">发送消息</button>
 
-  <label>主题: </label>
-  <input type="text" id="topic" value="device/led"><br><br>
-
-  <button onclick="connectMQTT()">连接</button><br><br>
-  <button id="on" onclick="publish('ON')">开灯</button>
-  <button id="off" onclick="publish('OFF')">关灯</button>
-
-  <div id="status">未连接</div>
+  <textarea id="log" readonly placeholder="收到的消息..."></textarea>
 
   <script>
-    let client = null;
+    let client;
 
-    function connectMQTT() {
+    function connect() {
       const broker = document.getElementById('broker').value;
       client = mqtt.connect(broker);
 
       client.on('connect', () => {
-        document.getElementById('status').innerText = '已连接';
-        const topic = document.getElementById('topic').value;
-        client.subscribe('device/status');  // 订阅状态反馈
+        log("已连接: " + broker);
+        const subTopic = document.getElementById('subTopic').value;
+        client.subscribe(subTopic);
+        log("订阅主题: " + subTopic);
       });
 
       client.on('message', (topic, message) => {
-        document.getElementById('status').innerText = `设备状态：${message}`;
+        log(`[${topic}] ${message}`);
       });
 
-      client.on('error', (err) => {
-        document.getElementById('status').innerText = '连接失败：' + err.message;
+      client.on('error', err => {
+        log("连接错误: " + err.message);
       });
     }
 
-    function publish(command) {
-      if (!client || !client.connected) {
-        alert("MQTT 未连接！");
-        return;
+    function publish() {
+      const topic = document.getElementById('pubTopic').value;
+      const msg = document.getElementById('message').value;
+      if (client && client.connected) {
+        client.publish(topic, msg);
+        log(`[发送] ${topic}: ${msg}`);
+      } else {
+        log("未连接，无法发送");
       }
-      const topic = document.getElementById('topic').value;
-      client.publish(topic, command);
+    }
+
+    function log(msg) {
+      const logArea = document.getElementById('log');
+      logArea.value += msg + "\n";
+      logArea.scrollTop = logArea.scrollHeight;
     }
   </script>
 </body>
