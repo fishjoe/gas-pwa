@@ -24,17 +24,35 @@
     textarea { height: 150px; }
   </style>
 </head>
-  <body>
-  <h2>MQTT 测试工具</h2>
+<body>
+  <h2>MQTT WebSocket 测试工具</h2>
 
-  <input id="broker" value="wss://50b688e9a3514eaa8a4864b6ef39c7f2.s2.eu.hivemq.cloud:8884/mqtt" placeholder="MQTT 地址（wss://）">
-  <input id="subTopic" value="test/topic" placeholder="订阅主题">
-  <input id="pubTopic" value="test/topic" placeholder="发布主题">
-  <input id="message" placeholder="要发送的消息">
+  <label>Broker 地址 (wss://...):</label><br>
+  <input id="broker" value="wss://50b688e9a3514eaa8a4864b6ef39c7f2.s2.eu.hivemq.cloud/mqtt" style="width: 100%;"><br><br>
+
+  <label>用户名:</label><br>
+  <input id="username" value="fishjoe"><br><br>
+
+  <label>密码:</label><br>
+  <input id="password" value="fish8264" type="password"><br><br>
+
+  <label>Client ID (留空自动生成):</label><br>
+  <input id="clientId"><br><br>
+
+  <label>订阅主题:</label><br>
+  <input id="subTopic" value="test/topic"><br><br>
+
+  <label>发布主题:</label><br>
+  <input id="pubTopic" value="test/topic"><br><br>
+
+  <label>发送消息:</label><br>
+  <input id="message" placeholder="要发送的消息"><br><br>
+
   <button onclick="connect()">连接</button>
   <button onclick="publish()">发送消息</button>
 
-  <textarea id="log" readonly placeholder="收到的消息..."></textarea>
+  <h3>日志</h3>
+  <textarea id="log" readonly style="width:100%;height:200px;"></textarea>
 
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
@@ -42,33 +60,51 @@
 
     function connect() {
       const brokerUrl = document.getElementById('broker').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      let clientId = document.getElementById('clientId').value;
+      if (!clientId) {
+        clientId = "webClient_" + Math.random().toString(16).substr(2, 8);
+        document.getElementById('clientId').value = clientId;
+      }
+
+      log("连接中...");
+
       client = mqtt.connect(brokerUrl, {
-        username: "fishjoe",
-        password: "fish8264",
-        clientId: "webClient_" + Math.random().toString(16).substr(2, 8),
+        username,
+        password,
+        clientId,
         clean: true,
-        connectTimeout: 4000,
-        reconnectPeriod: 1000
+        connectTimeout: 5000,
+        reconnectPeriod: 2000
       });
 
-      client.on('connect', () => {
+      client.on("connect", () => {
         log("已连接: " + brokerUrl);
-        const subTopic = document.getElementById('subTopic').value;
-        client.subscribe(subTopic, (err) => {
+        const topic = document.getElementById('subTopic').value;
+        client.subscribe(topic, err => {
           if (err) {
             log("订阅失败: " + err.message);
           } else {
-            log("订阅主题: " + subTopic);
+            log("订阅成功: " + topic);
           }
         });
       });
 
-      client.on('message', (topic, message) => {
-        log(`[${topic}] ${message}`);
+      client.on("message", (topic, message) => {
+        log(`[${topic}] ${message.toString()}`);
       });
 
-      client.on('error', err => {
+      client.on("error", err => {
         log("连接错误: " + err.message);
+      });
+
+      client.on("reconnect", () => {
+        log("尝试重连...");
+      });
+
+      client.on("close", () => {
+        log("连接已关闭");
       });
     }
 
