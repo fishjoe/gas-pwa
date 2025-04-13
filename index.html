@@ -24,10 +24,10 @@
     textarea { height: 150px; }
   </style>
 </head>
-<body>
+  <body>
   <h2>MQTT 测试工具</h2>
 
-  <input id="broker" value="wss://test.mosquitto.org:8081" placeholder="MQTT 地址（wss://）">
+  <input id="broker" value="wss://50b688e9a3514eaa8a4864b6ef39c7f2.s2.eu.hivemq.cloud:8884/mqtt" placeholder="MQTT 地址（wss://）">
   <input id="subTopic" value="test/topic" placeholder="订阅主题">
   <input id="pubTopic" value="test/topic" placeholder="发布主题">
   <input id="message" placeholder="要发送的消息">
@@ -36,18 +36,31 @@
 
   <textarea id="log" readonly placeholder="收到的消息..."></textarea>
 
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
     let client;
 
     function connect() {
-      const broker = document.getElementById('broker').value;
-      client = mqtt.connect(broker);
+      const brokerUrl = document.getElementById('broker').value;
+      client = mqtt.connect(brokerUrl, {
+        username: "fishjoe",
+        password: "fish8264",
+        clientId: "webClient_" + Math.random().toString(16).substr(2, 8),
+        clean: true,
+        connectTimeout: 4000,
+        reconnectPeriod: 1000
+      });
 
       client.on('connect', () => {
-        log("已连接: " + broker);
+        log("已连接: " + brokerUrl);
         const subTopic = document.getElementById('subTopic').value;
-        client.subscribe(subTopic);
-        log("订阅主题: " + subTopic);
+        client.subscribe(subTopic, (err) => {
+          if (err) {
+            log("订阅失败: " + err.message);
+          } else {
+            log("订阅主题: " + subTopic);
+          }
+        });
       });
 
       client.on('message', (topic, message) => {
