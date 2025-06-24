@@ -1,129 +1,89 @@
 <!DOCTYPE html>
-<html>
-<head> 
-<meta charset="UTF-8">
-<!-- 固定状态栏为黑底白字，不随系统变化 -->
-<!-- 固定状态栏为白底黑字 -->
-<meta name="theme-color" content="#ffffff">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <title>MQTT 简易测试</title>
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>控制界面</title>
+
+  <!-- ✅ iOS 全屏支持 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="旅游控制界面">
+
+  <!-- ✅ iOS 主屏幕图标（使用 icon-192.png） -->
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+
+  <!-- ✅ 可选：启动图（你目前没有，可以后续添加） -->
+  <!-- <link rel="apple-touch-startup-image" href="splash.png"> -->
+
   <style>
-    body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: env(safe-area-inset-top);
-  width: 100vw;
-  background-color: white; /* 改为白色 */
-  z-index: 9999;
-}
-    body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
-    input, button, textarea { width: 100%; margin-top: 10px; padding: 8px; font-size: 16px; }
-    textarea { height: 150px; }
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #F7F7F7;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .button {
+      width: 80%;
+      max-width: 300px;
+      padding: 15px;
+      margin: 10px 0;
+      font-size: 18px;
+      color: white;
+      background-color: #4DA8DA;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #3998c6;
+    }
+
+    .slider-container {
+      width: 80%;
+      max-width: 300px;
+      margin-top: 30px;
+    }
+
+    .slider {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 8px;
+      border-radius: 5px;
+      background: #6FCF97;
+      outline: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #FFC300;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      margin-top: -8px;
+    }
   </style>
 </head>
 <body>
-  <h2>MQTT WebSocket 测试工具</h2>
 
-  <label>Broker 地址 (wss://...):</label><br>
-  <input id="broker" value="wss://client.hivemq.cloud:8884/mqtt" style="width: 100%;"><br><br>
+  <button class="button" onclick="location.href='button1.html'">按钮一</button>
+  <button class="button" onclick="location.href='button2.html'">按钮二</button>
 
-  <label>用户名:</label><br>
-  <input id="username" value="fishjoe"><br><br>
+  <div class="slider-container">
+    <input type="range" min="0" max="100" value="50" class="slider" id="slider">
+  </div>
 
-  <label>密码:</label><br>
-  <input id="password" value="fish8264" type="password"><br><br>
-
-  <label>Client ID (留空自动生成):</label><br>
-  <input id="clientId"><br><br>
-
-  <label>订阅主题:</label><br>
-  <input id="subTopic" value="test/topic"><br><br>
-
-  <label>发布主题:</label><br>
-  <input id="pubTopic" value="test/topic"><br><br>
-
-  <label>发送消息:</label><br>
-  <input id="message" placeholder="要发送的消息"><br><br>
-
-  <button onclick="connect()">连接</button>
-  <button onclick="publish()">发送消息</button>
-
-  <h3>日志</h3>
-  <textarea id="log" readonly style="width:100%;height:200px;"></textarea>
-
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-  <script>
-    let client;
-
-    function connect() {
-      const brokerUrl = document.getElementById('broker').value;
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      let clientId = document.getElementById('clientId').value;
-      if (!clientId) {
-        clientId = "webClient_" + Math.random().toString(16).substr(2, 8);
-        document.getElementById('clientId').value = clientId;
-      }
-
-      log("连接中...");
-
-      client = mqtt.connect(brokerUrl, {
-        username,
-        password,
-        clientId,
-        clean: true,
-        connectTimeout: 5000,
-        reconnectPeriod: 2000
-      });
-
-      client.on("connect", () => {
-        log("已连接: " + brokerUrl);
-        const topic = document.getElementById('subTopic').value;
-        client.subscribe(topic, err => {
-          if (err) {
-            log("订阅失败: " + err.message);
-          } else {
-            log("订阅成功: " + topic);
-          }
-        });
-      });
-
-      client.on("message", (topic, message) => {
-        log(`[${topic}] ${message.toString()}`);
-      });
-
-      client.on("error", err => {
-        log("连接错误: " + err.message);
-      });
-
-      client.on("reconnect", () => {
-        log("尝试重连...");
-      });
-
-      client.on("close", () => {
-        log("连接已关闭");
-      });
-    }
-
-    function publish() {
-      const topic = document.getElementById('pubTopic').value;
-      const msg = document.getElementById('message').value;
-      if (client && client.connected) {
-        client.publish(topic, msg);
-        log(`[发送] ${topic}: ${msg}`);
-      } else {
-        log("未连接，无法发送");
-      }
-    }
-
-    function log(msg) {
-      const logArea = document.getElementById('log');
-      logArea.value += msg + "\n";
-      logArea.scrollTop = logArea.scrollHeight;
-    }
-  </script>
 </body>
 </html>
