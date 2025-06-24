@@ -1,68 +1,62 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>控制界面</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=768, initial-scale=1.0">
+  <title>旅游控制界面</title>
 
-  <!-- iOS 全屏设置 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="控制界面">
+  <meta name="apple-mobile-web-app-title" content="旅游控制界面">
   <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
 
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
-      height: 100%;
+      background-color: #f0f0f0;
+      position: relative;
+      width: 768px;
+      height: 1024px;
+      overflow: hidden;
     }
 
-    .grid {
-      display: table;
-      width: 100%;
-      height: 100%;
-      table-layout: fixed;
-      border-collapse: collapse;
-    }
-
-    .row {
-      display: table-row;
-    }
-
-    .cell {
-      display: table-cell;
+    .button {
+      position: absolute;
+      width: 384px;
+      height: 341px;
       border: 1px solid black;
-      text-align: center;
-      vertical-align: middle;
-      font-size: 24px;
-      font-family: -apple-system, Helvetica, Arial, sans-serif;
       background-color: #4DA8DA;
       color: white;
-      cursor: pointer;
+      font-size: 24px;
+      text-align: center;
+      line-height: 341px;
+      font-family: -apple-system, Helvetica, Arial, sans-serif;
     }
 
-    .cell:active {
+    .button:active {
       background-color: #3998c6;
     }
+
+    /* 六个按钮的位置 */
+    #btn1 { top: 0px; left: 0px; }
+    #btn2 { top: 0px; left: 384px; }
+
+    #btn3 { top: 341px; left: 0px; }
+    #btn4 { top: 341px; left: 384px; }
+
+    #btn5 { top: 682px; left: 0px; }
+    #btn6 { top: 682px; left: 384px; }
   </style>
 </head>
 <body>
 
-  <div class="grid">
-    <div class="row">
-      <div class="cell" onclick="location.href='button1.html'">按钮一</div>
-      <div class="cell" onclick="location.href='button2.html'">按钮二</div>
-    </div>
-    <div class="row">
-      <div class="cell" onclick="location.href='button3.html'">按钮三</div>
-      <div class="cell" onclick="location.href='button4.html'">按钮四</div>
-    </div>
-    <div class="row">
-      <div class="cell" onclick="location.href='button5.html'">按钮五</div>
-      <div class="cell" onclick="location.href='button6.html'">按钮六</div>
-    </div>
-  </div>
+  <div class="button" id="btn1" onclick="location.href='button1.html'">按钮一</div>
+  <div class="button" id="btn2" onclick="location.href='button2.html'">按钮二</div>
+  <div class="button" id="btn3" onclick="location.href='button3.html'">按钮三</div>
+  <div class="button" id="btn4" onclick="location.href='button4.html'">按钮四</div>
+  <div class="button" id="btn5" onclick="location.href='button5.html'">按钮五</div>
+  <div class="button" id="btn6" onclick="location.href='button6.html'">按钮六</div>
 
 </body>
 </html>
