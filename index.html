@@ -15,49 +15,53 @@
     html, body {
       margin: 0;
       padding: 0;
-      background-color: #F7F7F7;
-      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
       height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
-    .grid-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      max-width: 400px;
-      gap: 20px;
+    .grid {
+      display: table;
+      width: 100%;
+      height: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
     }
 
-    .button {
-      width: 150px;
-      height: 150px;
-      font-size: 20px;
-      color: white;
+    .row {
+      display: table-row;
+    }
+
+    .cell {
+      display: table-cell;
+      border: 1px solid black;
+      text-align: center;
+      vertical-align: middle;
+      font-size: 24px;
+      font-family: -apple-system, Helvetica, Arial, sans-serif;
       background-color: #4DA8DA;
-      border: none;
-      border-radius: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      color: white;
       cursor: pointer;
-      transition: background-color 0.3s;
     }
 
-    .button:hover {
+    .cell:active {
       background-color: #3998c6;
     }
   </style>
 </head>
 <body>
 
-  <div class="grid-container">
-    <button class="button" onclick="location.href='button1.html'">按钮一</button>
-    <button class="button" onclick="location.href='button2.html'">按钮二</button>
-    <button class="button" onclick="location.href='button3.html'">按钮三</button>
-    <button class="button" onclick="location.href='button4.html'">按钮四</button>
-    <button class="button" onclick="location.href='button5.html'">按钮五</button>
-    <button class="button" onclick="location.href='button6.html'">按钮六</button>
+  <div class="grid">
+    <div class="row">
+      <div class="cell" onclick="location.href='button1.html'">按钮一</div>
+      <div class="cell" onclick="location.href='button2.html'">按钮二</div>
+    </div>
+    <div class="row">
+      <div class="cell" onclick="location.href='button3.html'">按钮三</div>
+      <div class="cell" onclick="location.href='button4.html'">按钮四</div>
+    </div>
+    <div class="row">
+      <div class="cell" onclick="location.href='button5.html'">按钮五</div>
+      <div class="cell" onclick="location.href='button6.html'">按钮六</div>
+    </div>
   </div>
 
 </body>
