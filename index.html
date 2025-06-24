@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>旅游控制界面</title>
 
-  <!-- ✅ iOS 全屏支持 -->
+  <!-- iOS 全屏设置 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="旅游控制界面">
   <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
 
   <style>
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       background-color: #F7F7F7;
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
-      height: 100vh;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -26,19 +26,15 @@
     .grid-container {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      grid-template-rows: repeat(3, 1fr);
+      grid-template-rows: repeat(3, auto);
       gap: 20px;
       width: 90vw;
       max-width: 700px;
-      height: 90vh;
-      max-height: 700px;
-      padding: 10px;
-      box-sizing: border-box;
     }
 
     .button {
       width: 100%;
-      height: 100%;
+      aspect-ratio: 1 / 1;
       font-size: 20px;
       color: white;
       background-color: #4DA8DA;
